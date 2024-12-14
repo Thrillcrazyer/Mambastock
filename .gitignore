@@ -1,0 +1,8 @@
+.env
+
+data/
+log/
+wandb/
+result/
+runs/
+plots/
