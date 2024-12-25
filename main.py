@@ -18,13 +18,14 @@ def main(config):
     #model=LSTM_Mixer(lstmconfig).to("cuda")
     
     model=Mambamodeling(
-        d_model=1024,
-        d_inermediate=4098,
-        n_layer=12,
-        layer="Mamba2"
-    )
-    
-    project_name="Thrillcrazyer/Mambastocks_ver0.5/Mamba2_latest"
+            d_model=768,
+            d_inermediate=4096,
+            n_layer=8,
+            stock_feature=5,
+            pad_vocab_size_multiple=5,
+            layer="Mamba2",
+        )
+    project_name="Thrillcrazyer/Mambastocks_final/Mamba2"
 
     trainer=Trainer(model,project_name,config)
     

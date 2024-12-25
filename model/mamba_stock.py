@@ -250,6 +250,7 @@ class MambaStockHeadModel(nn.Module):
             residual_in_fp32=residual_in_fp32,
             **factory_kwargs,
         )
+        print(vocab_size)
         self.lm_head = nn.Linear(d_model, vocab_size, bias=False, **factory_kwargs)
 
 
@@ -300,6 +301,7 @@ def Mambamodeling(
     residual_in_fp32=True,
     fused_add_norm=True,
     pad_vocab_size_multiple=5,
+    stock_feature=5,
     pretrained_path=None
 ):
     
@@ -310,17 +312,23 @@ def Mambamodeling(
         d_model=d_model,
         d_intermediate= d_inermediate,
         n_layer=n_layer,
-        vocab_size=5,
+        vocab_size=stock_feature,
         ssm_cfg=dict(layer=layer),
         rms_norm=rms_norm,
         residual_in_fp32=residual_in_fp32,
         fused_add_norm=fused_add_norm,
         pad_vocab_size_multiple=pad_vocab_size_multiple,
     )
+    
+    
     if pretrained_path is None:
         model=MambaStockHeadModel(config, device=device, dtype=dtype)
     else:
         model = MambaStockHeadModel(config, device=device, dtype=dtype).from_pretrained(pretrained_path)
+        
+    print(f"{layer} model is initialized.")
+    count_parameters_in_millions(model)
+    
     return model
     
 

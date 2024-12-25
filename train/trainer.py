@@ -98,11 +98,13 @@ class Trainer:
         valid_data = './eval'
         train_dataset = ConstantAllLengthDataset(folder_path=train_data,
                                             seq_length=seq_length,
-                                            batch=self.args.train_batch_size
+                                            batch=self.args.train_batch_size,
+                                            is_multi_feature=self.args.multi_feature
                                             )
         valid_dataset = ConstantLengthDataset(folder_path=valid_data,
                                             seq_length=seq_length,
-                                            batch=self.args.valid_batch_size)
+                                            batch=self.args.valid_batch_size,
+                                            is_multi_feature=self.args.multi_feature)
         return train_dataset,valid_dataset
     
     def setup_logging(self,project_name):

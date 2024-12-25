@@ -62,11 +62,9 @@ def predict(data,model,seq_length):
         price_pred=pred[3]*open/100
         stock_predictions.append(price_pred)
         diff_pred.append((price_pred-close)/close*100)
-        
-        
-        
         if start_idx%200==0:
             torch.cuda.empty_cache()
+            
     stock_predictions=torch.stack(stock_predictions, dim=0).cpu().numpy()
     data["predict"]=np.concatenate((np.zeros(seq_length+1), stock_predictions))
     diff_pred=torch.stack(diff_pred, dim=0).cpu().numpy()
