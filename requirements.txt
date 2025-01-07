@@ -1,0 +1,9 @@
+mamba-ssm
+tqdm
+argparse
+python-dotenv
+python-binance
+causal-conv1d
+backtesting
+pandas
+matplotlib

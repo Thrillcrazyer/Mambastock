@@ -11,13 +11,13 @@ import numpy as np
 import warnings
 warnings.filterwarnings('ignore')
 
-data_path="/workspace/stock/data/BTCUSDT.csv"
+data_path="/workspace/data/BTCUSDT_hour.csv"
 device="cuda"
 d_type=torch.float32
 
-def MambaModel():
+def Mamba2Model():
     from model.mamba_stock import Mambamodeling
-    pretrained_path="/workspace/stock/result/Thrillcrazyer/Mambastocks_ver0.5/Mamba2_2048/0000085000"
+    pretrained_path="/workspace/weight/Mamba2"
     model=Mambamodeling(
             d_model=768,
             d_inermediate=2048,
@@ -27,6 +27,20 @@ def MambaModel():
         ).to(device)
     model.eval()
     return model
+
+def Mamba1Model():
+    from model.mamba_stock import Mambamodeling
+    pretrained_path="/workspace/weight/Mamba1"
+    model=Mambamodeling(
+            d_model=768,
+            d_inermediate=2048,
+            n_layer=8,
+            layer="Mamba1",
+            pretrained_path=pretrained_path
+        ).to(device)
+    model.eval()
+    return model
+
 
 def TransformerModel():
     from model.qwen_stock import QwenStock
@@ -41,7 +55,7 @@ def TransformerModel():
                     vocab_size= 5
                     )
 
-    model=QwenStock(qwenconfig).from_pretrained("/workspace/stock/result/Thrillcrazyer/Mambastocks_ver0.5/Qwen2/0000085000").to(device)
+    model=QwenStock(qwenconfig).from_pretrained("/workspace/weight/0000085000").to(device)
     return model
 
 data=pd.read_csv(data_path).dropna()
@@ -76,8 +90,8 @@ def eval(df,seqlen):
     import scipy.stats as stats
     df=df.iloc[seqlen:].copy()
     #RMSE 측정
-    mse = np.square(np.mean((df['Close'] - df['predict']) ** 2))
-    print("Root Mean Squared Error (RMSE):", mse)
+    error = np.square(np.mean((df['Close'] - df['predict'])/df['Close'])*100)
+    print("Precent Mean Error:", error)
     
     
     #승률 측정
@@ -147,7 +161,7 @@ def plotting(data,seqlen=128,folder_path='./df'):
 
 if __name__ == "__main__":
     #model=TransformerModel()
-    model=MambaModel()
+    model=TransformerModel()
     predict(data,model,127)
-    plotting(data,folder_path='plots/Mamba2_2048')
+    plotting(data,folder_path='plots/Transformer')
     eval(data,128)

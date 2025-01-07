@@ -77,9 +77,9 @@ def collecting():
             print(e)  
 
 if __name__ == '__main__':
-    collecting()
-    #path='./data/BTCUSDT_hour.csv'
-    #client=get_client()
+    #collecting()
+    path='./data/BTCUSDT_15min.csv'
+    client=get_client()
     #collecting_data_1day(client=client,save_path=path,symbol="BTCUSDT")
-    #collecting_data_all_1hour(client=client,save_path=path)
+    collecting_data_all_1hour(client=client,save_path=path,interval='15m',symbol="BTCUSDT")
 
