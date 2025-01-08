@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 
 @dataclass
 class LSTMConfig:
-
     d_model: int = 2560
     d_intermediate: int = 0
     num_layer: int = 64

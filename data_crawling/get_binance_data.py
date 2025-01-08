@@ -78,8 +78,8 @@ def collecting():
 
 if __name__ == '__main__':
     #collecting()
-    path='./data/BTCUSDT_15min.csv'
+    path='./data/HBARUSDT_15min.csv'
     client=get_client()
     #collecting_data_1day(client=client,save_path=path,symbol="BTCUSDT")
-    collecting_data_all_1hour(client=client,save_path=path,interval='15m',symbol="BTCUSDT")
+    collecting_data_all_1hour(client=client,save_path=path,interval='15m',symbol="1MBABYDOGEUSDT")
 
