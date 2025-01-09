@@ -14,7 +14,8 @@ class xLSTMStockModel(xLSTMLMModel):
 def xLSTMStockModeling(
     vocab_size=5,
     embedding_dim=128,
-    context_lenght=256
+    context_lenght=256,
+    act_fn= "gelu",
 ):
     xlstm_cfg = f""" 
 vocab_size: {vocab_size}
@@ -31,7 +32,7 @@ slstm_block:
     bias_init: powerlaw_blockdependent
   feedforward:
     proj_factor: 1.3
-    act_fn: gelu
+    act_fn: {act_fn}
 context_length: {context_lenght}
 num_blocks: 7
 embedding_dim: {embedding_dim}
@@ -42,12 +43,14 @@ slstm_at: [1]
     xlstm_stack = xLSTMStockModel(cfg)
     return xlstm_stack
 
-batch=10
-seqlen= 128
-ohlcv=5
 
-x = torch.rand(batch,seqlen,ohlcv).to("cuda")
-xlstm_stack = xLSTMStockModeling().to("cuda")
-y = xlstm_stack(x)
-print(y.shape)
+if __name__ == '__main__':
+    batch=10
+    seqlen= 128
+    ohlcv=5
+
+    x = torch.rand(batch,seqlen,ohlcv).to("cuda")
+    xlstm_stack = xLSTMStockModeling().to("cuda")
+    y = xlstm_stack(x)
+    print(y.shape)
 
