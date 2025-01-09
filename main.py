@@ -19,13 +19,13 @@ def main(config):
     
     model=Mambamodeling(
             d_model=768,
-            d_inermediate=4096,
+            d_inermediate=2048,
             n_layer=8,
             stock_feature=5,
             pad_vocab_size_multiple=5,
             layer="Mamba2",
         )
-    project_name="Thrillcrazyer/Mambastocks_final/Mamba2"
+    project_name="Thrillcrazyer/Mambastocks_final/Mamba2_256"
 
     trainer=Trainer(model,project_name,config)
     

@@ -157,7 +157,7 @@ class Trainer:
         for step, batch in enumerate(self.train_dataloader,start=1):
         
             batch=batch.to(self.device)
-            loss=torch.sqrt(self.get_loss(self.criterion,batch))
+            loss=self.get_loss(self.criterion,batch)
             loss = loss / self.gradient_accumulation_steps
             self.accelerator.backward(loss)
             
