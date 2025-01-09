@@ -1,8 +1,12 @@
 .env
-
+weight/
 data/
 log/
 wandb/
 result/
 runs/
 plots/
+
+# Python compiled files
+*.pyc
+__pycache__/

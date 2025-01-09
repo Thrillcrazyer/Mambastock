@@ -8,7 +8,7 @@ import argparse
 import json
 
 parser = argparse.ArgumentParser(description='StockTrain')
-parser.add_argument('-c', '--config', default='/workspace/stock/configs/train_config.json', type=str)
+parser.add_argument('-c', '--config', default='/workspace/configs/train_config.json', type=str)
 args = parser.parse_args()
 
 
