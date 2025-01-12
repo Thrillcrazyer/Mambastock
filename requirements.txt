@@ -7,3 +7,8 @@ causal-conv1d
 backtesting
 pandas
 matplotlib
+xlstm
+accelerate
+tensorboard
+datasets
+wandb
