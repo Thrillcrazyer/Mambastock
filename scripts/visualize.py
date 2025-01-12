@@ -10,8 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import warnings
 warnings.filterwarnings('ignore')
-
-data_path="/workspace/data/BTCUSDT_hour.csv"
 device="cuda"
 d_type=torch.float32
 
@@ -41,7 +39,6 @@ def Mamba1Model():
     model.eval()
     return model
 
-
 def TransformerModel():
     from model.qwen_stock import QwenStock
     from transformers import AutoConfig
@@ -55,12 +52,16 @@ def TransformerModel():
                     vocab_size= 5
                     )
 
-    model=QwenStock(qwenconfig).from_pretrained("/workspace/weight/0000085000").to(device)
+    model=QwenStock(qwenconfig).from_pretrained("/workspace/weight/QWEN").to(device)
     return model
 
-data=pd.read_csv(data_path).dropna()
-data = data[~(data == 0).any(axis=1)]
-data['date'] = pd.to_datetime(data['date'])
+def xLSTMModel():
+    from model.xlstm_stock import xLSTMStockModeling
+    model=xLSTMStockModeling(pretrained_path="/workspace/weight/xLSTM2").to("cuda")
+    
+    return model
+
+
 
 def predict(data,model,seq_length):
     stock_predictions=[]
@@ -81,44 +82,37 @@ def predict(data,model,seq_length):
             
     stock_predictions=torch.stack(stock_predictions, dim=0).cpu().numpy()
     data["predict"]=np.concatenate((np.zeros(seq_length+1), stock_predictions))
+    
+    
     diff_pred=torch.stack(diff_pred, dim=0).cpu().numpy()
     data["diff_pred"]=np.concatenate((np.zeros(seq_length+1), diff_pred))
+    
     data['Return (%)'] = data['Close'].pct_change() * 100
+    
+    data=data.iloc[seq_length+1:]    
     return data
         
-def eval(df,seqlen):
+def eval(df,folder_path):
     import scipy.stats as stats
-    df=df.iloc[seqlen:].copy()
-    #RMSE 측정
-    error = np.square(np.mean((df['Close'] - df['predict'])/df['Close'])*100)
-    print("Precent Mean Error:", error)
-    
-    
-    #승률 측정
-    df['Is_Increased_Real'] = df['Return (%)'] > 0
-    df['Is_Increased_Pred'] = df['diff_pred'] > 0
-    df['Rate']=df['Is_Increased_Pred']^df['Is_Increased_Real']
-    true_count = (df['Rate'] == True).sum()
-    false_count = (df['Rate'] == False).sum()
-    print(f"Win RATE: {true_count/(true_count+false_count)}")
-    
-    
-    data['error']=(data['predict']-data['Close'])/data['Close']
-    
-    # ShapiroTest 측정
-    stat, p_value = stats.shapiro(data['error'])
-    if p_value > 0.05:
-        print("데이터는 정규 분포를 따릅니다. (p > 0.05)")
-    else:
-        print("데이터는 정규 분포를 따르지 않습니다. (p <= 0.05)")
+    #MSE,MAE 측정
+    file_path=os.path.join(folder_path,"result.txt")
+    with open(file_path, "w") as file:
         
+        data=(df['Close'] - df['predict'])/df['Close']
+        error = (np.mean(np.square(data)))
+    
+        print("MSE:", error)
+        file.write(f"MSE: {error}\n")
+        print("MAE: ",(np.mean(np.abs(data))))
+        file.write(f"MAE: {(np.mean(np.abs(data)))}\n")
+
+        # ShapiroTest 측정
+        stat, p_value = stats.shapiro(data)
+        print(f"Shapiro Test: {p_value}")
+        file.write(f"Shapiro Test: {p_value}\n")
     
 
-
-def plotting(data,seqlen=128,folder_path='./df'):
-    
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
+def plotting(data,folder_path='./df'):
     
     predict_plot=os.path.join(folder_path,'predict.jpg')
     plt.figure(figsize=(12, 6))
@@ -129,18 +123,7 @@ def plotting(data,seqlen=128,folder_path='./df'):
     plt.ylabel("Price")
     plt.savefig(predict_plot)
     
-    predict_tail_plot=os.path.join(folder_path,'predict_tail.jpg')
-    datat=data.tail()
-    plt.figure(figsize=(12, 6))
-    plt.plot(datat['date'], datat['Close'], label='Close')
-    plt.plot(datat['date'], datat['predict'], label='Predict')
-    plt.title("Stock Price Chart")
-    plt.xlabel("Date")
-    plt.ylabel("Price")
-    plt.savefig(predict_tail_plot)
-    
-    data=data.iloc[seqlen:].copy()
-    error_plot=os.path.join(folder_path,'error.jpg')
+    error_plot=os.path.join(folder_path,'error_hist.jpg')
     plt.figure(figsize=(12, 6))
     data['error']=(data['predict']-data['Close'])/data['Close']*100
     plt.hist(data['error'],bins=200)
@@ -149,19 +132,45 @@ def plotting(data,seqlen=128,folder_path='./df'):
     plt.ylabel("Freq")
     plt.savefig(error_plot)
     
-    predict_tail_plot=os.path.join(folder_path,'predict_return.jpg')
+    predict_tail_plot=os.path.join(folder_path,'error.jpg')
     plt.figure(figsize=(12, 6))
-    plt.plot(data['date'], data['Return (%)'], label='Return (%)')
-    plt.plot(data['date'], data["diff_pred"], label='Retrun Pred')
-    plt.title("Stock Return Chart")
+    plt.plot(data['date'], data["error"], label='Error')
+    plt.title("Stock Pred_ERROR Chart")
     plt.xlabel("Date")
-    plt.ylabel("Return (%)")
+    plt.ylabel("ERROR")
     plt.savefig(predict_tail_plot)
 
+def visualize(data,model_name,stock_name):
+    print(f"Evaluate {model_name}>>>>>>>>>>>>>>>")
+    folder_path=os.path.join('plots',stock_name,model_name)
+    
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    
+    if model_name=="Mamba2":
+        model=Mamba2Model()
+    if model_name=="Mamba1":
+        model=Mamba1Model()
+    if model_name=="Transformer":
+        model=TransformerModel()
+    if model_name=="xLSTM":
+        model=xLSTMModel()
+        
+    data=predict(data,model,127)
+    plotting(data,folder_path=folder_path)
+    eval(data,folder_path=folder_path)
+    
 
 if __name__ == "__main__":
-    #model=TransformerModel()
-    model=TransformerModel()
-    predict(data,model,127)
-    plotting(data,folder_path='plots/Transformer')
-    eval(data,128)
+    #data_path="/workspace/data/BTCUSDT_hour.csv"
+    #data=pd.read_csv(data_path).dropna()
+    #data = data[~(data == 0).any(axis=1)]
+    #data['date'] = pd.to_datetime(data['date'])
+    from backtesting.test import EURUSD,GOOG
+    data=GOOG
+    data['date']=data.index
+    
+    #for model_name in ('Transformer','Mamba1','Mamba2','xLSTM'):
+    #    visualize(data,model_name,"./GOOG")
+    visualize(data,'xLSTM',"./GOOG")
+    

@@ -28,10 +28,8 @@ def eval(eval_dataloader, model, mse):
             losses.append(loss.item())
         print("loss 값: ",loss)
     
-    
     # losses를 Tensor로 변환 후 평균 계산
     loss = torch.tensor(losses).mean()
-    
     return loss.item(),losses
 
 
